@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String         @id @default(uuid())
+  email        String         @unique
+  password     String
+  name         String
+  travelStyle  String // "adventure" | "relaxed" | "cultural"
+  pace         String // "packed" | "light"
+  budgetRange  String // "budget" | "mid-range" | "premium"
+  currency     String         @default("INR") // "INR" | "USD" | "EUR"
+  distanceUnit String         @default("km") // "km" | "mi"
+  theme        String         @default("light") // "light" | "dark" | "system"
+  emailAlerts  Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+  trips        Collaborator[]
+}
+
+model Trip {
+  id                   String          @id @default(uuid())
+  name                 String
+  destination          String
+  startDate            DateTime
+  endDate              DateTime
+  travelers            Int
+  originCity           String
+  transportMode        String // "bus" | "train" | "car" | "flight"
+  estimatedTravelHours Float
+  createdAt            DateTime        @default(now())
+  collaborators        Collaborator[]
+  items                ItineraryItem[]
+  hotels               Hotel[]
+  messages             TripMessage[]
+  shareToken           String          @unique @default(uuid())
+  tripCode             String?         @unique
+  dailySummaries       Json? // Stores the AI-generated 1-2 line summary for each day
+}
+
+model Collaborator {
+  id     String @id @default(uuid())
+  tripId String
+  userId String
+  role   String // "owner" | "editor" | "viewer"
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tripId, userId])
+}
+
+model ItineraryItem {
+  id                     String   @id @default(uuid())
+  tripId                 String
+  day                    Int
+  position               Float
+  type                   String   @default("activity")
+  time                   String
+  activity               String
+  location               String
+  lat                    Float?
+  lng                    Float?
+  durationMinutes        Int
+  estimatedCost          Int
+  category               String // "outdoor" | "food" | "transport" | "culture" | "accommodation"
+  notes                  String?
+  travelTimeFromPrevious Int?
+  hasTimingConflict      Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  trip                   Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+}
+
+model LocationCache {
+  id            String   @id @default(uuid())
+  origin        String
+  destination   String
+  travelMinutes Int
+  cachedAt      DateTime @default(now())
+
+  @@unique([origin, destination])
+}
+
+model Hotel {
+  id            String   @id @default(uuid())
+  tripId        String
+  name          String
+  address       String
+  zone          String
+  checkinDay    Int
+  checkoutDay   Int
+  checkinDate   DateTime
+  checkoutDate  DateTime
+  rating        Float?
+  priceRange    String?
+  photoUrl      String?
+  googlePlaceId String?
+  mapsUrl       String?
+  saved         Boolean  @default(false)
+  trip          Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([tripId])
+}
+
+model TripMessage {
+  id        String   @id @default(uuid())
+  tripId    String
+  userId    String
+  userName  String
+  content   String
+  createdAt DateTime @default(now())
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([tripId])
+}
