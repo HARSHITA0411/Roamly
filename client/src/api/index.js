@@ -1,9 +1,9 @@
 import axios from 'axios'
 
 const api = axios.create({
-  // Empty baseURL = use Vite's proxy (configured in vite.config.js)
-  // This forwards /api/* → http://localhost:5000/api/* automatically
-  baseURL: '',
+  // Empty baseURL = use Vite's proxy (configured in vite.config.js) in dev
+  // In production, VITE_API_URL should point to the deployed server
+  baseURL: import.meta.env.VITE_API_URL || '',
 })
 
 // Attach token to every request
@@ -43,6 +43,7 @@ export const itineraryAPI = {
   reorder: (tripId, data) => api.post(`/api/trips/${tripId}/itinerary/reorder`, data),
   add: (tripId, data) => api.post(`/api/trips/${tripId}/itinerary/add`, data),
   regeocode: (tripId) => api.post(`/api/trips/${tripId}/itinerary/regeocode`),
+  recalcTravelTimes: (tripId) => api.post(`/api/trips/${tripId}/itinerary/recalc-travel-times`),
   regenerateDay: (tripId, data) => api.post(`/api/trips/${tripId}/itinerary/regenerate-day`, data),
   saveRegeneratedDay: (tripId, data) => api.post(`/api/trips/${tripId}/itinerary/save-day`, data),
 }

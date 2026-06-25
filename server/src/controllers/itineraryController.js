@@ -545,4 +545,57 @@ const saveRegeneratedDay = async (req, res) => {
   }
 }
 
-module.exports = { generateItineraryHandler, updateItem, deleteItem, reorderItem, addItem, generateSummary, regeocodeItems, regenerateDay, saveRegeneratedDay }
+// POST /api/trips/:tripId/itinerary/recalc-travel-times
+const recalcTravelTimes = async (req, res) => {
+  try {
+    const { tripId } = req.params
+
+    const role = await getCollaboratorRole(tripId, req.user.id)
+    if (!role) return res.status(403).json({ error: 'Forbidden' })
+
+    if (!isMapsConfigured()) {
+      return res.status(400).json({ error: 'Google Maps API key is not configured on the server.' })
+    }
+
+    // Fetch all items for this trip
+    const allItems = await prisma.itineraryItem.findMany({
+      where: { tripId },
+      orderBy: [{ day: 'asc' }, { position: 'asc' }]
+    })
+
+    if (allItems.length === 0) {
+      return res.json({ message: 'No items found', updated: 0 })
+    }
+
+    // Run travel time validation (Distance Matrix API)
+    const validated = await validateTravelTimes(allItems)
+
+    // Update each item with the calculated travel time
+    let updated = 0
+    for (const item of validated) {
+      if (item.travelTimeFromPrevious !== undefined) {
+        await prisma.itineraryItem.update({
+          where: { id: item.id },
+          data: {
+            travelTimeFromPrevious: item.travelTimeFromPrevious,
+            hasTimingConflict: item.hasTimingConflict || false
+          }
+        })
+        if (item.travelTimeFromPrevious !== null) updated++
+      }
+    }
+
+    // Return updated items
+    const updatedItems = await prisma.itineraryItem.findMany({
+      where: { tripId },
+      orderBy: [{ day: 'asc' }, { position: 'asc' }]
+    })
+
+    return res.json({ message: `Calculated travel times for ${updated} routes`, updated, items: updatedItems })
+  } catch (err) {
+    console.error('Recalc travel times error:', err)
+    return res.status(500).json({ error: 'Failed to calculate travel times' })
+  }
+}
+
+module.exports = { generateItineraryHandler, updateItem, deleteItem, reorderItem, addItem, generateSummary, regeocodeItems, regenerateDay, saveRegeneratedDay, recalcTravelTimes }

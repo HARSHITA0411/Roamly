@@ -38,82 +38,26 @@ function buildPath(pts) {
 }
 
 /* ──────────────────────────────────────────────────────────
-   Photo URLs — LoremFlickr (free, keyword-based, no API key)
-   Each lock number fetches a DIFFERENT photo for the same keyword
-   ────────────────────────────────────────────────────────── */
-function makePhotoUrl(location, lock = 1) {
-  // Take only the primary place name (before first comma)
-  const place = location.split(',')[0].trim()
-  return `https://loremflickr.com/800/500/${encodeURIComponent(place)},travel?lock=${lock}`
-}
-
-/* ──────────────────────────────────────────────────────────
-   Single gallery photo cell
-   ────────────────────────────────────────────────────────── */
-const GalleryPhoto = ({ url, cat, className }) => {
-  const [loaded, setLoaded] = useState(false)
-  const [err,    setErr]    = useState(false)
-
-  return (
-    <div className={`jml-gp ${className || ''}`}>
-      {!err ? (
-        <>
-          {!loaded && <div className="jml-shimmer"><div className="jml-shimmer-inner" /></div>}
-          <img
-            src={url}
-            alt=""
-            className={`jml-gp-img ${loaded ? 'jml-gp-loaded' : ''}`}
-            onLoad={() => setLoaded(true)}
-            onError={() => setErr(true)}
-          />
-        </>
-      ) : (
-        <div
-          className="jml-gp-fallback"
-          style={{ background: `linear-gradient(135deg, ${cat.fill}, ${cat.ring}33)` }}
-        >
-          <span style={{ fontSize: 30 }}>{cat.emoji}</span>
-        </div>
-      )}
-    </div>
-  )
-}
-
-/* ──────────────────────────────────────────────────────────
-   Photo Popup — 3 real photos + "See more" link
+   Photo Popup — Simple card with link
    ────────────────────────────────────────────────────────── */
 const PhotoPopup = ({ act, onClose }) => {
   const cat     = getCat(act.category)
   const moreUrl = `https://www.google.com/search?q=${encodeURIComponent(act.location + ' ' + act.activity + ' photos')}&tbm=isch`
 
-  // Three different lock values = three different Flickr photos of the same place
-  const photoUrls = [
-    makePhotoUrl(act.location, 1),
-    makePhotoUrl(act.location, 2),
-    makePhotoUrl(act.location, 3),
-  ]
-
   return (
     <div className="jml-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="jml-popup">
 
-        {/* 3-photo editorial grid */}
-        <div className="jml-gallery">
-          <GalleryPhoto url={photoUrls[0]} cat={cat} className="jml-gp-main" />
-          <GalleryPhoto url={photoUrls[1]} cat={cat} />
-          <GalleryPhoto url={photoUrls[2]} cat={cat} />
-        </div>
-
-        {/* Overlays */}
-        <div className="jml-gallery-fade" />
         <button className="jml-close" onClick={onClose}><X size={15} /></button>
-        <div className="jml-cat-tag" style={{ background: cat.fill, color: cat.color }}>
-          {cat.emoji} {cat.label}
-        </div>
 
         {/* Info */}
-        <div className="jml-popup-body">
-          <div className="jml-popup-time" style={{ color: cat.color }}>{act.time}</div>
+        <div className="jml-popup-body" style={{ paddingTop: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+            <div className="jml-popup-time" style={{ color: cat.color }}>{act.time}</div>
+            <div style={{ padding: '2px 8px', borderRadius: '100px', fontSize: '10px', fontWeight: '700', background: cat.fill, color: cat.color }}>
+              {cat.emoji} {cat.label}
+            </div>
+          </div>
           <h3 className="jml-popup-title">{act.activity}</h3>
           <div className="jml-popup-loc"><MapPin size={13} />{act.location}</div>
 

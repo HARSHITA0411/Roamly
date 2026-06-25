@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router({ mergeParams: true })
 const authMiddleware = require('../middleware/auth')
 const {
-  generateItineraryHandler, updateItem, deleteItem, reorderItem, addItem, generateSummary, regeocodeItems, regenerateDay, saveRegeneratedDay
+  generateItineraryHandler, updateItem, deleteItem, reorderItem, addItem, generateSummary, regeocodeItems, regenerateDay, saveRegeneratedDay, recalcTravelTimes
 } = require('../controllers/itineraryController')
 
 router.use(authMiddleware)
@@ -12,6 +12,7 @@ router.post('/summary', generateSummary)
 router.post('/reorder', reorderItem)
 router.post('/add', addItem)
 router.post('/regeocode', regeocodeItems)
+router.post('/recalc-travel-times', recalcTravelTimes)
 router.post('/regenerate-day', regenerateDay)
 router.post('/save-day', saveRegeneratedDay)
 router.put('/:itemId', updateItem)

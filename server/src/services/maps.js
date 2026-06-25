@@ -67,6 +67,10 @@ const getDistanceMatrix = async (pairs) => {
   const origins = pairs.map(p => p.from)
   const destinations = pairs.map(p => p.to)
 
+  console.log(`📍 Distance Matrix API: ${pairs.length} pairs`)
+  console.log(`   Origins: ${origins.join(' | ')}`)
+  console.log(`   Destinations: ${destinations.join(' | ')}`)
+
   const url = `https://maps.googleapis.com/maps/api/distancematrix/json`
   const res = await axios.get(url, {
     params: {
@@ -77,21 +81,33 @@ const getDistanceMatrix = async (pairs) => {
     }
   })
 
+  console.log(`   API Status: ${res.data.status}`)
+  if (res.data.error_message) {
+    console.error(`   API Error: ${res.data.error_message}`)
+  }
+
   const results = {}
   const rows = res.data.rows
+
+  if (!rows || rows.length === 0) {
+    console.warn('   No rows returned from Distance Matrix API')
+    return results
+  }
 
   for (let i = 0; i < pairs.length; i++) {
     try {
       const element = rows[i].elements[i]
+      console.log(`   Pair ${i}: ${pairs[i].from} → ${pairs[i].to} = ${element.status}${element.status === 'OK' ? ` (${element.duration.text})` : ''}`)
       if (element.status === 'OK') {
         const minutes = Math.ceil(element.duration.value / 60)
         results[`${pairs[i].from}|||${pairs[i].to}`] = minutes
       }
     } catch (e) {
-      // skip failed pairs
+      console.warn(`   Pair ${i} failed:`, e.message)
     }
   }
 
+  console.log(`   ✅ Got ${Object.keys(results).length} travel times`)
   return results
 }
 

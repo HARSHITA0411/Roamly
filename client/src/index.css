@@ -1120,9 +1120,150 @@ textarea.input {
 }
 
 /* ===== MAP TAB ===== */
-.map-container {
+.map-view-wrapper {
+  display: flex;
+  flex-direction: column;
   height: calc(100vh - 200px);
   min-height: 400px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.map-day-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+
+.map-day-toggle::-webkit-scrollbar {
+  display: none;
+}
+
+.map-day-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.map-day-btn:hover {
+  border-color: var(--day-color, var(--color-primary));
+  color: var(--day-color, var(--color-primary));
+  background: color-mix(in srgb, var(--day-color, var(--color-primary)) 8%, var(--color-bg));
+}
+
+.map-day-btn.active {
+  background: var(--day-color, var(--color-primary));
+  border-color: var(--day-color, var(--color-primary));
+  color: #fff;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--day-color, var(--color-primary)) 40%, transparent);
+}
+
+.map-day-btn-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 700;
+  background: color-mix(in srgb, currentColor 15%, transparent);
+}
+
+.map-day-btn.active .map-day-btn-count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.map-container {
+  flex: 1;
+  min-height: 0;
+}
+
+.map-legend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.map-legend-hint {
+  font-size: 11px;
+  color: var(--color-text-tertiary, #999);
+  font-style: italic;
+}
+
+.map-legend-count {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.map-legend-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.map-calc-travel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 16px;
+  border: 1.5px solid var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.map-calc-travel-btn:hover:not(:disabled) {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.map-calc-travel-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .map-day-toggle {
+    padding: 8px 10px;
+    gap: 5px;
+  }
+  .map-day-btn {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
 }
 
 /* ===== INLINE EDIT ===== */

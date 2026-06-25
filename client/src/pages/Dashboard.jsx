@@ -18,12 +18,12 @@ const TRANSPORT_OPTIONS = [
 ]
 
 const TRENDING_DESTINATIONS = [
-  { dest: 'Bali, Indonesia', title: 'Tropical Paradise Retreat', days: '7 Days', activities: 12, bg: 'linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%)' },
-  { dest: 'Tokyo, Japan', title: 'City Lights & Culture', days: '10 Days', activities: 24, bg: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)' },
-  { dest: 'Swiss Alps', title: 'Skiing & Mountains', days: '5 Days', activities: 8, bg: 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)' },
-  { dest: 'Paris, France', title: 'Romantic Getaway', days: '4 Days', activities: 10, bg: 'linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)' },
-  { dest: 'New York, USA', title: 'The Big Apple Experience', days: '5 Days', activities: 15, bg: 'linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)' },
-  { dest: 'Rome, Italy', title: 'Historical Journey', days: '6 Days', activities: 14, bg: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)' }
+  { dest: 'Bali, Indonesia', title: 'Tropical Paradise Retreat', days: '7 Days', activities: 12, bg: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%), url(https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=80) center/cover no-repeat' },
+  { dest: 'Tokyo, Japan', title: 'City Lights & Culture', days: '10 Days', activities: 24, bg: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%), url(https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=800&q=80) center/cover no-repeat' },
+  { dest: 'Swiss Alps', title: 'Skiing & Mountains', days: '5 Days', activities: 8, bg: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%), url(https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?auto=format&fit=crop&w=800&q=80) center/cover no-repeat' },
+  { dest: 'Paris, France', title: 'Romantic Getaway', days: '4 Days', activities: 10, bg: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%), url(https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=800&q=80) center/cover no-repeat' },
+  { dest: 'New York, USA', title: 'The Big Apple Experience', days: '5 Days', activities: 15, bg: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%), url(https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=800&q=80) center/cover no-repeat' },
+  { dest: 'Rome, Italy', title: 'Historical Journey', days: '6 Days', activities: 14, bg: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%), url(https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=800&q=80) center/cover no-repeat' }
 ]
 
 const formatDate = (d) => {
@@ -285,10 +285,10 @@ const Dashboard = () => {
             {(showAllTrending ? TRENDING_DESTINATIONS : TRENDING_DESTINATIONS.slice(0, 3)).map((trend, i) => (
               <div key={i} className="card trip-card" style={{ padding: 0, overflow: 'hidden', border: 'none' }}>
                 <div style={{ height: '120px', background: trend.bg, padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                  <div style={{ background: 'rgba(255,255,255,0.3)', width: 'fit-content', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600, color: '#333' }}>
+                  <div style={{ background: 'rgba(255,255,255,0.9)', width: 'fit-content', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600, color: '#333' }}>
                     Trending
                   </div>
-                  <div style={{ fontWeight: 700, fontSize: '20px', color: '#111', textShadow: '0 1px 2px rgba(255,255,255,0.5)' }}>
+                  <div style={{ fontWeight: 700, fontSize: '20px', color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
                     {trend.dest}
                   </div>
                 </div>
