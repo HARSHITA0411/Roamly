@@ -63,6 +63,35 @@ const Settings = () => {
     }
   }, [user])
 
+  useEffect(() => {
+    const applyTheme = (themeName) => {
+      const root = document.documentElement
+      root.classList.remove('light-theme', 'dark-theme')
+      
+      let resolvedTheme = themeName || 'light'
+      if (resolvedTheme === 'system') {
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        resolvedTheme = systemPrefersDark ? 'dark' : 'light'
+      }
+      
+      if (resolvedTheme === 'dark') {
+        root.classList.add('dark-theme')
+      } else {
+        root.classList.add('light-theme')
+      }
+    }
+
+    if (form.theme) {
+      applyTheme(form.theme)
+    }
+
+    return () => {
+      if (user) {
+        applyTheme(user.theme || 'light')
+      }
+    }
+  }, [form.theme, user])
+
   const setField = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }))
   }
@@ -262,7 +291,7 @@ const Settings = () => {
           </button>
         </div>
 
-        <div className="settings-section" style={{ borderColor: 'var(--color-error)', backgroundColor: '#FEF2F2', marginTop: 'var(--space-4)' }}>
+        <div className="settings-section" style={{ borderColor: 'var(--color-error)', backgroundColor: 'var(--color-error-bg)', marginTop: 'var(--space-4)' }}>
           <h2 className="settings-section-title" style={{ color: 'var(--color-error)', borderBottomColor: 'var(--color-error)' }}>Account Actions</h2>
           <button 
             className="btn btn-danger" 

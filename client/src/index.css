@@ -11,6 +11,7 @@
   --color-success: #22C55E;
   --color-error: #EF4444;
   --color-hero-tint: #FFF8F5;
+  --color-error-bg: #FEF2F2;
 
   --radius-card: 12px;
   --radius-btn: 8px;
@@ -27,6 +28,64 @@
   --space-4: 32px;
   --space-5: 48px;
   --space-6: 64px;
+}
+
+/* ===== DARK THEME ===== */
+.dark-theme {
+  --color-bg: #0F0F11;
+  --color-surface: #18181C;
+  --color-border: #26262E;
+  --color-text-primary: #F3F4F6;
+  --color-text-secondary: #9CA3AF;
+  --color-hero-tint: #2C1A14;
+  --color-error-bg: #2D1A1A;
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.35);
+  --shadow-modal: 0 24px 80px rgba(0, 0, 0, 0.55);
+}
+
+/* Component overrides for dark theme */
+.dark-theme .toast {
+  background: var(--color-surface);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.dark-theme .canvas-day-header {
+  background: var(--color-surface);
+}
+
+.dark-theme .canvas-card {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.dark-theme .summary-toolbar {
+  background: var(--color-surface);
+}
+
+.dark-theme .jml-photo-fade {
+  background: linear-gradient(to top, var(--color-bg), transparent);
+}
+
+.dark-theme .jml-close {
+  background: rgba(24, 24, 28, 0.85);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-theme .jml-close:hover {
+  background: var(--color-surface);
+  border-color: var(--color-primary);
+}
+
+.dark-theme .jml-popup-body {
+  background: var(--color-surface);
+}
+
+.dark-theme ::-webkit-scrollbar-thumb {
+  background: #33333E;
+}
+
+.dark-theme ::-webkit-scrollbar-thumb:hover {
+  background: #444452;
 }
 
 /* ===== RESET ===== */

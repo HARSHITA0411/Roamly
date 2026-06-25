@@ -25,6 +25,35 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token])
 
+  useEffect(() => {
+    const applyTheme = (themeName) => {
+      const root = document.documentElement
+      root.classList.remove('light-theme', 'dark-theme')
+      
+      let resolvedTheme = themeName || 'light'
+      if (resolvedTheme === 'system') {
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        resolvedTheme = systemPrefersDark ? 'dark' : 'light'
+      }
+      
+      if (resolvedTheme === 'dark') {
+        root.classList.add('dark-theme')
+      } else {
+        root.classList.add('light-theme')
+      }
+    }
+
+    const currentTheme = user?.theme || 'light'
+    applyTheme(currentTheme)
+
+    if (currentTheme === 'system') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+      const handleChange = () => applyTheme('system')
+      mediaQuery.addEventListener('change', handleChange)
+      return () => mediaQuery.removeEventListener('change', handleChange)
+    }
+  }, [user])
+
   const login = (tokenStr, userData) => {
     localStorage.setItem('roamly_token', tokenStr)
     setToken(tokenStr)
