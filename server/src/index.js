@@ -25,6 +25,8 @@ const isAllowedOrigin = (origin) => {
     const cleanClientUrl = process.env.CLIENT_URL.replace(/\/$/, '')
     if (cleanOrigin === cleanClientUrl) return true
   }
+  // Fallback: Allow any Vercel subdomain to prevent CORS block
+  if (/\.vercel\.app$/.test(origin)) return true
   return false
 }
 
@@ -74,9 +76,11 @@ app.set('io', io)
 
 setupSocket(io)
 
-const PORT = process.env.PORT || 5000
-httpServer.listen(PORT, () => {
-  console.log(`🚀 Roamly server running on port ${PORT}`)
-})
+if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 5000
+  httpServer.listen(PORT, () => {
+    console.log(`🚀 Roamly server running on port ${PORT}`)
+  })
+}
 
 module.exports = app
