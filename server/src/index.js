@@ -19,8 +19,12 @@ const isAllowedOrigin = (origin) => {
   // Allow any localhost port in development
   if (/^https?:\/\/localhost(:\d+)?$/.test(origin)) return true
   if (/^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(origin)) return true
-  // Allow explicit CLIENT_URL for production
-  if (process.env.CLIENT_URL && origin === process.env.CLIENT_URL) return true
+  // Allow explicit CLIENT_URL for production (normalize trailing slashes)
+  if (process.env.CLIENT_URL) {
+    const cleanOrigin = origin.replace(/\/$/, '')
+    const cleanClientUrl = process.env.CLIENT_URL.replace(/\/$/, '')
+    if (cleanOrigin === cleanClientUrl) return true
+  }
   return false
 }
 
