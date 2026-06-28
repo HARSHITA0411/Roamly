@@ -1,5 +1,6 @@
 const prisma = require('../prismaClient')
 const crypto = require('crypto')
+const { estimateTransportOptions } = require('../services/gemini')
 
 const VALID_TRANSPORT_MODES = ['bus', 'train', 'car', 'flight']
 
@@ -237,4 +238,18 @@ const joinTripByCode = async (req, res) => {
   }
 }
 
-module.exports = { createTrip, getTrips, getTrip, deleteTrip, joinTrip, getTripByShareToken, joinTripByCode }
+const estimateTransport = async (req, res) => {
+  try {
+    const { originCity, destination } = req.body
+    if (!originCity) return res.status(400).json({ error: 'Origin city is required' })
+    if (!destination) return res.status(400).json({ error: 'Destination is required' })
+
+    const estimates = await estimateTransportOptions(originCity, destination)
+    return res.json({ estimates })
+  } catch (err) {
+    console.error('Estimate transport error:', err)
+    return res.status(500).json({ error: 'Failed to estimate transport details' })
+  }
+}
+
+module.exports = { createTrip, getTrips, getTrip, deleteTrip, joinTrip, getTripByShareToken, joinTripByCode, estimateTransport }

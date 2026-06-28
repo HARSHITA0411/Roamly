@@ -32,7 +32,9 @@ export const tripsAPI = {
   join: (tripId, shareToken) => api.post(`/api/trips/${tripId}/join`, { shareToken }),
   getByShareToken: (shareToken) => api.get(`/api/trips/join/${shareToken}`),
   joinByCode: (code) => api.post('/api/trips/join-by-code', { code }),
+  estimateTransport: (data) => api.post('/api/trips/estimate-transport', data),
 }
+
 
 // Itinerary API
 export const itineraryAPI = {

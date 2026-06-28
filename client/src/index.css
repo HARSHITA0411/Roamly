@@ -3996,3 +3996,70 @@ textarea.input {
   padding: 8px;
 }
 
+/* Collaborators List (Actions Bar) */
+.collaborators-list {
+  display: flex;
+  align-items: center;
+  margin-right: 12px;
+}
+.collaborator-avatar-wrapper {
+  position: relative;
+  margin-left: -8px; /* Negative margin for overlapping avatar effect */
+  transition: transform 0.15s ease, z-index 0.15s ease;
+  cursor: default;
+}
+.collaborator-avatar-wrapper:first-child {
+  margin-left: 0;
+}
+.collaborator-avatar-wrapper:hover {
+  transform: translateY(-2px);
+  z-index: 10;
+}
+.collaborator-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  border: 2px solid var(--color-bg); /* standard overlap separator using the theme's background */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  user-select: none;
+}
+.collaborator-avatar.offline {
+  opacity: 0.55;
+  filter: grayscale(30%);
+}
+.collaborator-avatar.online {
+  opacity: 1;
+  filter: none;
+}
+.collaborator-status-dot {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-bg);
+}
+.collaborator-status-dot.online {
+  background-color: #10B981;
+}
+.collaborator-status-dot.offline {
+  background-color: #9CA3AF;
+}
+
+.collaborators-overflow {
+  background: #BBBBBB !important;
+  color: #FFFFFF !important;
+  border: 2px solid var(--color-bg) !important;
+  cursor: default;
+}
+
+

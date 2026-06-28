@@ -11,7 +11,7 @@ import JourneyMap from '../components/JourneyMap'
 import MapView from '../components/MapView'
 import BudgetView from '../components/BudgetView'
 import TripSummaryView from '../components/TripSummaryView'
-import PresenceBar from '../components/PresenceBar'
+import CollaboratorsList from '../components/CollaboratorsList'
 import HotelSuggestions from '../components/HotelSuggestions'
 import useSocket from '../hooks/useSocket'
 import {
@@ -405,6 +405,11 @@ const TripDetail = () => {
                 Code: {trip.tripCode}
               </div>
             )}
+            <CollaboratorsList 
+              collaborators={trip.collaborators} 
+              presenceUsers={presenceUsers} 
+              currentUserId={user?.id} 
+            />
             <button className="btn btn-ghost btn-sm" onClick={handleCopyLink}>
               <Link2 size={15} /> Invite
             </button>
@@ -414,9 +419,6 @@ const TripDetail = () => {
             </button>
           </div>
         </div>
-
-        {/* V2: Presence Bar */}
-        <PresenceBar presenceUsers={presenceUsers} currentUserId={user?.id} />
       </div>
 
       {/* Tabs */}

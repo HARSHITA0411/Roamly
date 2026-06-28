@@ -51,6 +51,59 @@ const Dashboard = () => {
     travelers: '', originCity: '', transportMode: '', estimatedTravelHours: ''
   })
 
+  const [transportEstimates, setTransportEstimates] = useState(null)
+  const [estimatingTransport, setEstimatingTransport] = useState(false)
+
+  // Fetch transport practicality and estimated hours dynamically
+  useEffect(() => {
+    const origin = form.originCity?.trim()
+    const dest = form.destination?.trim()
+    
+    if (!origin || !dest || origin.length < 2 || dest.length < 2) {
+      setTransportEstimates(null)
+      return
+    }
+
+    const delayDebounce = setTimeout(async () => {
+      setEstimatingTransport(true)
+      try {
+        const res = await tripsAPI.estimateTransport({ originCity: origin, destination: dest })
+        const estimates = res.data.estimates
+        setTransportEstimates(estimates)
+        
+        // Auto-update hours if transport mode is selected and is practical
+        const currentMode = form.transportMode
+        if (currentMode && estimates) {
+          if (!estimates[currentMode]?.practical) {
+            // Reset selected mode if it is no longer practical
+            setForm(prev => ({ ...prev, transportMode: '', estimatedTravelHours: '' }))
+          } else {
+            // Update estimated hours
+            const hours = estimates[currentMode].hours
+            setForm(prev => ({ ...prev, estimatedTravelHours: hours ? String(hours) : '' }))
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch transport estimates', err)
+      } finally {
+        setEstimatingTransport(false)
+      }
+    }, 800)
+
+    return () => clearTimeout(delayDebounce)
+  }, [form.originCity, form.destination])
+
+  const handleSelectTransportMode = (modeValue) => {
+    const hours = transportEstimates?.[modeValue]?.hours
+    setForm(prev => ({
+      ...prev,
+      transportMode: modeValue,
+      estimatedTravelHours: hours ? String(hours) : ''
+    }))
+    setErrors(prev => ({ ...prev, transportMode: '', estimatedTravelHours: '' }))
+  }
+
+
   useEffect(() => {
     fetchTrips()
   }, [])
@@ -124,6 +177,8 @@ const Dashboard = () => {
   const resetForm = () => {
     setForm({ name: '', destination: '', startDate: '', endDate: '', travelers: '', originCity: '', transportMode: '', estimatedTravelHours: '' })
     setErrors({})
+    setTransportEstimates(null)
+    setEstimatingTransport(false)
   }
 
   const confirmDeleteTrip = async () => {
@@ -417,39 +472,70 @@ const Dashboard = () => {
           </div>
 
           <div className="input-group">
-            <label className="input-label">Mode of transport</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label className="input-label">Mode of transport</label>
+              {estimatingTransport && <span style={{ fontSize: '11px', color: 'var(--color-primary)' }}>Estimating practicality...</span>}
+            </div>
             <div className="option-group">
-              {TRANSPORT_OPTIONS.map(opt => (
-                <button
-                  key={opt.value}
-                  className={`option-btn ${form.transportMode === opt.value ? 'selected' : ''}`}
-                  onClick={() => set('transportMode', opt.value)}
-                >
-                  {opt.label}
-                </button>
-              ))}
+              {TRANSPORT_OPTIONS.map(opt => {
+                const optEstimate = transportEstimates?.[opt.value]
+                const isImpractical = transportEstimates && optEstimate && !optEstimate.practical
+                const isSelected = form.transportMode === opt.value
+
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    className={`option-btn ${isSelected ? 'selected' : ''} ${isImpractical ? 'impractical' : ''}`}
+                    onClick={() => {
+                      if (isImpractical) return
+                      handleSelectTransportMode(opt.value)
+                    }}
+                    disabled={isImpractical}
+                    title={isImpractical ? optEstimate.reason : `Select ${opt.label}`}
+                    style={isImpractical ? {
+                      opacity: 0.4,
+                      cursor: 'not-allowed',
+                      borderColor: 'var(--color-border)',
+                      textDecoration: 'line-through'
+                    } : {}}
+                  >
+                    {opt.label}
+                  </button>
+                )
+              })}
             </div>
             {errors.transportMode && <span className="field-error">{errors.transportMode}</span>}
           </div>
 
           {form.transportMode && (
-            <div className="input-group">
-              <label className="input-label">
-                <Clock size={13} style={{ display: 'inline', marginRight: 4 }} />
-                Approx. travel time to destination (hours)
-              </label>
-              <input
-                id="trip-travel-hours"
-                type="number"
-                min="0.5"
-                step="0.5"
-                className={`input ${errors.estimatedTravelHours ? 'input-error' : ''}`}
-                placeholder="e.g. 6.5"
-                value={form.estimatedTravelHours}
-                onChange={e => set('estimatedTravelHours', e.target.value)}
-              />
-              {errors.estimatedTravelHours && <span className="field-error">{errors.estimatedTravelHours}</span>}
+            <div className="input-group" style={{ 
+              background: 'var(--color-surface)', 
+              padding: '12px', 
+              borderRadius: 'var(--radius-input)', 
+              border: '1px solid var(--color-border)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginTop: 16
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Clock size={16} style={{ color: 'var(--color-primary)' }} />
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                    Estimated Travel Time
+                  </div>
+                </div>
+              </div>
+              <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-primary)' }}>
+                {form.estimatedTravelHours ? `${form.estimatedTravelHours} hours` : 'Calculating...'}
+              </div>
             </div>
+          )}
+          {errors.estimatedTravelHours && (
+            <span className="field-error" style={{ display: 'block', marginTop: 4 }}>
+              {errors.estimatedTravelHours}
+            </span>
           )}
         </div>
       </Modal>

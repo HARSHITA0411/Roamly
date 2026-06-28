@@ -231,4 +231,60 @@ ${dailyActivities}`
   return {}
 }
 
-module.exports = { generateItinerary, generateDailySummaries }
+const estimateTransportOptions = async (originCity, destination) => {
+  const prompt = `You are a travel assistant. Evaluate the practicality and estimated one-way travel time of 4 transport modes (bus, train, car, flight) from "${originCity}" to "${destination}".
+Return ONLY a valid JSON object. Do NOT include any explanations, markdown code fences, or preamble. The response must be raw JSON matching this structure:
+{
+  "bus": { "practical": boolean, "hours": number or null, "reason": "string describing why if impractical, or empty" },
+  "train": { "practical": boolean, "hours": number or null, "reason": "string describing why if impractical, or empty" },
+  "car": { "practical": boolean, "hours": number or null, "reason": "string describing why if impractical, or empty" },
+  "flight": { "practical": boolean, "hours": number or null, "reason": "string describing why if impractical, or empty" }
+}
+
+Rules:
+1. "practical" must be false if the mode of transport is impossible (e.g., crossing an ocean/sea without a bridge/tunnel/ferry) or extremely impractical/unreasonable (e.g. driving/bus/train taking more than 36 hours for a vacation trip).
+2. If "practical" is false, "hours" should be null, and "reason" must explain why (e.g., "Impractical: requires crossing oceans" or "Impractical: driving time exceeds 36 hours").
+3. If "practical" is true, "hours" must be a realistic estimate of the one-way travel time in hours (can be a decimal, like 6.5, representing average actual travel duration), and "reason" should be empty.
+4. "flight" can be impractical if there are no airports or if the distance is extremely short.
+5. Be realistic and accurate based on real-world geography.`
+
+  for (const modelName of MODEL_CANDIDATES) {
+    try {
+      const model = genAI.getGenerativeModel({ model: modelName })
+      const result = await model.generateContent(prompt)
+      let text = result.response.text()
+      text = text.replace(/```json|```/g, '').trim()
+      const start = text.indexOf('{')
+      const end = text.lastIndexOf('}')
+      if (start === -1 || end === -1) throw new Error('No JSON object found')
+      const parsed = JSON.parse(text.slice(start, end + 1))
+      
+      const modes = ['bus', 'train', 'car', 'flight']
+      const verified = {}
+      for (const m of modes) {
+        if (parsed[m] && typeof parsed[m].practical === 'boolean') {
+          verified[m] = {
+            practical: parsed[m].practical,
+            hours: typeof parsed[m].hours === 'number' ? parsed[m].hours : null,
+            reason: typeof parsed[m].reason === 'string' ? parsed[m].reason : ''
+          }
+        } else {
+          verified[m] = { practical: false, hours: null, reason: 'Evaluation failed' }
+        }
+      }
+      return verified
+    } catch (err) {
+      console.warn(`Failed to estimate transport with ${modelName}:`, err.message)
+    }
+  }
+  
+  return {
+    bus: { practical: false, hours: null, reason: 'Failed to estimate' },
+    train: { practical: false, hours: null, reason: 'Failed to estimate' },
+    car: { practical: false, hours: null, reason: 'Failed to estimate' },
+    flight: { practical: true, hours: 2.0, reason: '' }
+  }
+}
+
+module.exports = { generateItinerary, generateDailySummaries, estimateTransportOptions }
+
