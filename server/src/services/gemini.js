@@ -2,12 +2,17 @@ const { GoogleGenerativeAI } = require('@google/generative-ai')
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
-// Ordered list of models to try — gemini-2.0-flash was retired June 1 2026
+// Ordered list of models to try — fastest/cheapest first
 const MODEL_CANDIDATES = [
-  'gemini-3.5-flash',       // Current recommended replacement
-  'gemini-3.1-flash-lite',  // Cost-efficient fallback
-  'gemini-2.5-flash',       // Older but may still work
+  'gemini-2.5-flash-lite',  // Fastest & cheapest — best for simple JSON tasks
+  'gemini-2.5-flash',       // Reliable fallback
+  'gemini-2.0-flash',       // Legacy fallback
 ]
+
+// In-memory cache for transport estimates (avoids repeated Gemini calls)
+// Key: "originCity|destination" (lowercased), Value: { result, expiresAt }
+const transportEstimateCache = new Map()
+const CACHE_TTL_MS = 60 * 60 * 1000 // 1 hour
 
 const buildPrompt = (params) => {
   const {
@@ -232,6 +237,15 @@ ${dailyActivities}`
 }
 
 const estimateTransportOptions = async (originCity, destination) => {
+  const cacheKey = `${originCity.toLowerCase().trim()}|${destination.toLowerCase().trim()}`
+
+  // Return cached result if still fresh
+  const cached = transportEstimateCache.get(cacheKey)
+  if (cached && Date.now() < cached.expiresAt) {
+    console.log(`[Transport Cache HIT] ${cacheKey}`)
+    return cached.result
+  }
+
   const prompt = `You are a travel assistant. Evaluate the practicality and estimated one-way travel time of 4 transport modes (bus, train, car, flight) from "${originCity}" to "${destination}".
 Return ONLY a valid JSON object. Do NOT include any explanations, markdown code fences, or preamble. The response must be raw JSON matching this structure:
 {
@@ -272,6 +286,9 @@ Rules:
           verified[m] = { practical: false, hours: null, reason: 'Evaluation failed' }
         }
       }
+
+      // Store in cache before returning
+      transportEstimateCache.set(cacheKey, { result: verified, expiresAt: Date.now() + CACHE_TTL_MS })
       return verified
     } catch (err) {
       console.warn(`Failed to estimate transport with ${modelName}:`, err.message)

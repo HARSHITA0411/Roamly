@@ -527,8 +527,21 @@ const Dashboard = () => {
                   </div>
                 </div>
               </div>
-              <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-primary)' }}>
-                {form.estimatedTravelHours ? `${form.estimatedTravelHours} hours` : 'Calculating...'}
+              <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                {estimatingTransport ? (
+                  <>
+                    <span style={{
+                      display: 'inline-block',
+                      width: 14,
+                      height: 14,
+                      border: '2px solid var(--color-primary)',
+                      borderTopColor: 'transparent',
+                      borderRadius: '50%',
+                      animation: 'spin 0.7s linear infinite'
+                    }} />
+                    <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)', fontWeight: 500 }}>Estimating…</span>
+                  </>
+                ) : form.estimatedTravelHours ? `${form.estimatedTravelHours} hours` : '—'}
               </div>
             </div>
           )}
