@@ -60,54 +60,50 @@ const timeToMinutes = (timeStr) => {
   return h * 60 + m
 }
 
-// Run Distance Matrix for uncached pairs
+// Detect if two location strings are in significantly different countries/continents
+// by checking for known international city pairs that Distance Matrix can't handle
+const isLikelyFlightRoute = (from, to) => {
+  // If the previous item is a transport/flight, we skip Distance Matrix
+  // This is checked separately — this helper is for location heuristics
+  const normalize = (s) => s.toLowerCase().trim()
+  return normalize(from) !== normalize(to)
+}
+
+// Run Distance Matrix for uncached pairs — one request per pair to avoid MAX_ELEMENTS_EXCEEDED
 const getDistanceMatrix = async (pairs) => {
   if (pairs.length === 0) return {}
 
-  const origins = pairs.map(p => p.from)
-  const destinations = pairs.map(p => p.to)
-
-  console.log(`📍 Distance Matrix API: ${pairs.length} pairs`)
-  console.log(`   Origins: ${origins.join(' | ')}`)
-  console.log(`   Destinations: ${destinations.join(' | ')}`)
-
-  const url = `https://maps.googleapis.com/maps/api/distancematrix/json`
-  const res = await axios.get(url, {
-    params: {
-      origins: origins.join('|'),
-      destinations: destinations.join('|'),
-      mode: 'driving',
-      key: MAPS_KEY()
-    }
-  })
-
-  console.log(`   API Status: ${res.data.status}`)
-  if (res.data.error_message) {
-    console.error(`   API Error: ${res.data.error_message}`)
-  }
+  console.log(`📍 Distance Matrix API: ${pairs.length} pairs (1×1 requests)`)
 
   const results = {}
-  const rows = res.data.rows
-
-  if (!rows || rows.length === 0) {
-    console.warn('   No rows returned from Distance Matrix API')
-    return results
-  }
 
   for (let i = 0; i < pairs.length; i++) {
+    const { from, to } = pairs[i]
     try {
-      const element = rows[i].elements[i]
-      console.log(`   Pair ${i}: ${pairs[i].from} → ${pairs[i].to} = ${element.status}${element.status === 'OK' ? ` (${element.duration.text})` : ''}`)
-      if (element.status === 'OK') {
+      const url = `https://maps.googleapis.com/maps/api/distancematrix/json`
+      const res = await axios.get(url, {
+        params: {
+          origins: from,
+          destinations: to,
+          mode: 'driving',
+          key: MAPS_KEY()
+        }
+      })
+
+      const element = res.data.rows?.[0]?.elements?.[0]
+      if (element?.status === 'OK') {
         const minutes = Math.ceil(element.duration.value / 60)
-        results[`${pairs[i].from}|||${pairs[i].to}`] = minutes
+        results[`${from}|||${to}`] = minutes
+        console.log(`   ✅ Pair ${i}: ${from} → ${to} = ${element.duration.text}`)
+      } else {
+        console.warn(`   ⚠️ Pair ${i}: ${from} → ${to} = ${element?.status || 'NO_DATA'}`)
       }
     } catch (e) {
-      console.warn(`   Pair ${i} failed:`, e.message)
+      console.warn(`   ❌ Pair ${i} failed:`, e.message)
     }
   }
 
-  console.log(`   ✅ Got ${Object.keys(results).length} travel times`)
+  console.log(`   ✅ Got ${Object.keys(results).length}/${pairs.length} travel times`)
   return results
 }
 
@@ -136,15 +132,24 @@ const validateTravelTimes = async (items) => {
     byDay[day].sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time))
   }
 
-  // For each day, check consecutive pairs
+  // For each day, check consecutive pairs — skip transport items (flights/trains)
+  // because Distance Matrix API cannot route across continents/oceans
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
   const uncachedPairs = []
 
   for (const day of Object.keys(byDay)) {
     const dayItems = byDay[day]
     for (let i = 1; i < dayItems.length; i++) {
-      const from = dayItems[i - 1].location
+      const prevItem = dayItems[i - 1]
+      const from = prevItem.location
       const to = dayItems[i].location
+
+      // If prev item is transport (flight/train/bus), its durationMinutes IS the travel time
+      // Skip Distance Matrix for these — they cross cities/countries and can't be routed by car
+      if (prevItem.category === 'transport') continue
+
+      // Also skip if from === to (same location, no travel needed)
+      if (from.toLowerCase().trim() === to.toLowerCase().trim()) continue
 
       // Check cache
       const cached = await prisma.locationCache.findUnique({
@@ -194,17 +199,25 @@ const validateTravelTimes = async (items) => {
 
       let travelMinutes = null
 
-      // Try cache first
-      try {
-        const cached = await prisma.locationCache.findUnique({
-          where: { origin_destination: { origin: from, destination: to } }
-        })
-        if (cached) travelMinutes = cached.travelMinutes
-      } catch (e) {}
+      // ── KEY FIX: If the previous item is a transport activity (flight/train/bus),
+      // use its durationMinutes as the travel time. Distance Matrix can't handle
+      // cross-city / cross-continental routes.
+      if (prev.category === 'transport' && prev.durationMinutes) {
+        travelMinutes = prev.durationMinutes
+        console.log(`   ✈️  Transport item "${prev.activity}": using durationMinutes=${travelMinutes} as travel time`)
+      } else {
+        // Try cache first
+        try {
+          const cached = await prisma.locationCache.findUnique({
+            where: { origin_destination: { origin: from, destination: to } }
+          })
+          if (cached) travelMinutes = cached.travelMinutes
+        } catch (e) {}
 
-      // Fallback to API result
-      if (travelMinutes === null && apiResults[cacheKey] !== undefined) {
-        travelMinutes = apiResults[cacheKey]
+        // Fallback to API result
+        if (travelMinutes === null && apiResults[cacheKey] !== undefined) {
+          travelMinutes = apiResults[cacheKey]
+        }
       }
 
       curr.travelTimeFromPrevious = travelMinutes

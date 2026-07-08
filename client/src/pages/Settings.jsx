@@ -266,7 +266,7 @@ const Settings = () => {
             <div className="input-group">
               <label className="input-label">Theme</label>
               <div className="option-group">
-                {[{value: 'light', label: 'Light'}, {value: 'dark', label: 'Dark'}, {value: 'system', label: 'System'}].map(opt => (
+                {[{value: 'light', label: 'Light'}, {value: 'dark', label: 'Dark'}].map(opt => (
                   <button key={opt.value} className={`option-btn ${form.theme === opt.value ? 'selected' : ''}`} onClick={() => setField('theme', opt.value)}>
                     {opt.label}
                   </button>

@@ -346,6 +346,9 @@ const MapView = ({ items, tripId, onItemsUpdated }) => {
       // Travel time tooltip on hover
       const travelTime = to.travelTimeFromPrevious
       const travelStr = formatTravelTime(travelTime)
+      const isTransport = from.category === 'transport'
+      const transportEmoji = isTransport ? '✈️' : '🚗'
+      const transportLabel = isTransport ? 'flight' : 'drive'
 
       // Create a thicker invisible polyline for easier hover detection
       const hoverPolyline = new window.google.maps.Polyline({
@@ -370,11 +373,11 @@ const MapView = ({ items, tripId, onItemsUpdated }) => {
         const tooltipContent = travelStr
           ? `<div style="font-family: 'DM Sans', sans-serif; padding: 8px 12px; white-space: nowrap;">
               <div style="font-size: 11px; color: #888; margin-bottom: 2px;">${from.activity} → ${to.activity}</div>
-              <div style="font-weight: 700; font-size: 14px; color: ${dayColor};">🚗 ${travelStr}</div>
+              <div style="font-weight: 700; font-size: 14px; color: ${dayColor};">${transportEmoji} ${travelStr} ${transportLabel}</div>
             </div>`
           : `<div style="font-family: 'DM Sans', sans-serif; padding: 8px 12px; white-space: nowrap;">
               <div style="font-size: 11px; color: #888; margin-bottom: 2px;">${from.activity} → ${to.activity}</div>
-              <div style="font-size: 12px; color: #aaa;">Travel time not available</div>
+              <div style="font-size: 12px; color: #aaa;">Click ‘Calculate Travel Times’ below</div>
             </div>`
 
         const tooltip = new window.google.maps.InfoWindow({
