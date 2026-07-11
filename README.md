@@ -75,23 +75,28 @@ Roamly/
 
 ## Local Setup
 
-### 1. Clone the repository
+### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/HARSHITA0411/Roamly.git
 cd Roamly
 ```
 
+---
+
 ### 2. Backend Setup
+
+Navigate to the server directory and install dependencies:
 
 ```bash
 cd server
 npm install
 ```
 
-Create a `.env` file:
+Create a `.env` file inside the `server` folder:
 
 ```env
+PORT=5000
 DATABASE_URL=your_database_url
 JWT_SECRET=your_jwt_secret
 GEMINI_API_KEY=your_gemini_api_key
@@ -99,7 +104,7 @@ GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 CLIENT_URL=http://localhost:5173
 ```
 
-Run the server:
+Start the backend server:
 
 ```bash
 npm run dev
@@ -109,11 +114,29 @@ npm run dev
 
 ### 3. Frontend Setup
 
+Open a new terminal, navigate to the client directory, and install dependencies:
+
 ```bash
 cd client
 npm install
+```
+
+Create a `.env` file inside the `client` folder:
+
+```env
+VITE_API_URL=http://localhost:5000
+VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+```
+
+Start the frontend:
+
+```bash
 npm run dev
 ```
 
-Frontend runs on **http://localhost:5173**  
-Backend runs on **http://localhost:5000**
+---
+
+### 4. Access the Application
+
+- **Frontend:** http://localhost:5173
+- **Backend:** http://localhost:5000
